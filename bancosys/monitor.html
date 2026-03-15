@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Monitor — BancoSys</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:#050d1f;--navy2:#081222;--navy3:#0c1a30;
+      --card:#0d1828;--border:#14284a;--border2:#1c3860;
+      --gold:#c8a94a;--gold2:#e2c568;--gold3:#f0d98a;
+      --gold-dim:#c8a94a18;--gold-glow:#c8a94a35;
+      --cream:#f4efe4;--blue2:#2880cc;--blue-glow:#2880cc20;
+      --green:#1a9e5c;--green2:#22c57a;--green-glow:#22c57a18;
+      --amber:#d4880a;--amber-glow:#d4880a18;
+      --text:#e8edf8;--text2:#9ab0cc;--muted:#3a5878;--muted2:#223448;
+    }
+    html, body { height: 100%; background: #020810; display: grid; place-items: center; overflow: hidden; }
+    body { font-family: 'IBM Plex Sans', sans-serif; }
+
+    /* ── OUTER BEZEL ── */
+    .monitor {
+      width: 900px; max-width: 99vw;
+      background: var(--navy2);
+      border-radius: 18px;
+      border: 2px solid var(--border2);
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,.8),
+        0 0 60px rgba(200,169,74,.08),
+        0 40px 80px rgba(0,0,0,.6),
+        inset 0 1px 0 rgba(255,255,255,.04);
+      position: relative;
+    }
+
+    /* Screen glare */
+    .monitor::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 35%;
+      background: linear-gradient(180deg, rgba(255,255,255,.02) 0%, transparent 100%);
+      pointer-events: none; z-index: 60; border-radius: 16px 16px 0 0;
+    }
+
+    /* Gold rule at very top */
+    .gold-rule { height: 3px; background: linear-gradient(90deg, transparent, var(--gold), var(--gold2), var(--gold), transparent); }
+
+    /* ── TOP BAR ── */
+    .top-bar {
+      background: var(--navy3);
+      border-bottom: 1px solid var(--border);
+      padding: .75rem 1.75rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .tb-brand { display: flex; align-items: center; gap: .75rem; }
+    .tb-crest {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg,#081222,#0c1a30);
+      border: 1.5px solid var(--gold);
+      border-radius: 7px; display: grid; place-items: center;
+      font-size: .9rem;
+      box-shadow: 0 0 10px var(--gold-glow);
+    }
+    .tb-name { font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:700; color:var(--cream); }
+    .tb-name span { color:var(--gold2); }
+    .tb-sub { font-size:.54rem; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); }
+    #tb-clock {
+      font-family:'IBM Plex Mono',monospace;
+      font-size:1.6rem;font-weight:400;
+      color:var(--gold2);letter-spacing:2px;
+      text-shadow:0 0 20px var(--gold-glow);
+      font-variant-numeric:tabular-nums;
+    }
+    .tb-right { display:flex;align-items:center;gap:.75rem; }
+    .tb-date { font-size:.62rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:right;margin-bottom:.15rem; }
+    .live-badge { display:flex;align-items:center;gap:.35rem;font-size:.6rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--green2);justify-content:flex-end; }
+    .live-dot { width:6px;height:6px;border-radius:50%;background:var(--green2);box-shadow:0 0 6px var(--green2);animation:blink 2s ease-in-out infinite; }
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+    .back-link{display:flex;align-items:center;gap:.35rem;text-decoration:none;color:var(--muted);font-size:.68rem;border:1px solid var(--border2);border-radius:5px;padding:.28rem .7rem;transition:all .2s;}
+    .back-link:hover{color:var(--gold);border-color:var(--gold);}
+
+    /* ── NOW CALLING HERO ── */
+    .calling-zone {
+      background: linear-gradient(180deg, var(--navy3) 0%, var(--navy2) 100%);
+      padding: 1.5rem 2rem 1.25rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border2);
+      position: relative;
+    }
+    /* Corner brackets */
+    .corner { position:absolute;width:14px;height:14px;opacity:.4; }
+    .c-tl{top:8px;left:8px;border-top:1.5px solid var(--gold);border-left:1.5px solid var(--gold);}
+    .c-tr{top:8px;right:8px;border-top:1.5px solid var(--gold);border-right:1.5px solid var(--gold);}
+    .c-bl{bottom:8px;left:8px;border-bottom:1.5px solid var(--gold);border-left:1.5px solid var(--gold);}
+    .c-br{bottom:8px;right:8px;border-bottom:1.5px solid var(--gold);border-right:1.5px solid var(--gold);}
+
+    .calling-label {
+      font-size:.6rem;font-weight:600;letter-spacing:4px;text-transform:uppercase;
+      color:var(--muted);margin-bottom:.6rem;
+    }
+    .calling-number {
+      font-family:'Cormorant Garamond',serif;
+      font-size:6.5rem;font-weight:700;line-height:1;
+      letter-spacing:8px;color:var(--gold2);
+      text-shadow:0 0 30px var(--gold-glow), 0 0 60px rgba(200,169,74,.1);
+      transition:all .4s;
+      min-height:100px;display:flex;align-items:center;justify-content:center;
+    }
+    .calling-number.idle { color:var(--muted2); font-size:4rem; letter-spacing:4px; text-shadow:none; }
+    .calling-module {
+      font-size:.85rem;font-weight:500;letter-spacing:3px;text-transform:uppercase;
+      color:var(--blue2);text-shadow:0 0 8px var(--blue-glow);
+      min-height:22px;margin-top:.25rem;
+    }
+
+    /* ── TWO-COLUMN BOARD ── */
+    .board { display:grid;grid-template-columns:1fr 1px 1fr; }
+    .col-divider { background:var(--border); }
+    .col { display:flex;flex-direction:column; }
+    .col-head {
+      background:var(--navy3);border-bottom:1px solid var(--border2);
+      padding:.6rem 1.25rem;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .ch-title { font-size:.58rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;display:flex;align-items:center;gap:.5rem; }
+    .ch-cnt {
+      font-family:'IBM Plex Mono',monospace;
+      font-size:.7rem;font-weight:500;
+      background:var(--navy);border:1px solid var(--border2);
+      border-radius:4px;padding:.1rem .45rem;
+    }
+    .col-body { padding:.7rem 1rem;max-height:190px;overflow-y:auto; }
+    .col-body::-webkit-scrollbar{width:2px;}
+    .col-body::-webkit-scrollbar-thumb{background:var(--border2);}
+
+    .t-row {
+      display:flex;align-items:center;justify-content:space-between;
+      padding:.55rem .75rem;border-radius:7px;border:1px solid var(--border);
+      margin-bottom:.38rem;transition:border-color .2s;
+    }
+    .t-row:hover{border-color:var(--border2);}
+    .t-left{display:flex;align-items:center;gap:.75rem;}
+    .t-folio{font-family:'IBM Plex Mono',monospace;font-size:.9rem;font-weight:500;min-width:46px;}
+    .fw{color:var(--amber);}
+    .fa{color:var(--green2);}
+    .t-mod{font-size:.78rem;font-weight:500;}
+    .t-time{font-size:.65rem;color:var(--muted);}
+    .tag{font-family:'IBM Plex Mono',monospace;font-size:.52rem;letter-spacing:.5px;text-transform:uppercase;border-radius:3px;padding:.12rem .4rem;border:1px solid currentColor;}
+    .tag-w{color:var(--amber);background:var(--amber-glow);}
+    .tag-a{color:var(--green2);background:var(--green-glow);}
+    .t-empty{text-align:center;padding:1.25rem;color:var(--muted2);font-size:.72rem;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;}
+
+    /* ── TICKER ── */
+    .ticker-bar {
+      background:var(--navy3);border-top:1px solid var(--border);
+      height:30px;display:flex;align-items:center;overflow:hidden;
+    }
+    .ticker-flag {
+      background:var(--gold);color:var(--navy);
+      font-family:'IBM Plex Mono',monospace;
+      font-size:.55rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+      padding:0 1rem;height:100%;display:flex;align-items:center;flex-shrink:0;
+    }
+    .ticker-scroll {
+      display:flex;gap:3rem;padding:0 1.5rem;
+      animation:crawl 24s linear infinite;white-space:nowrap;
+    }
+    @keyframes crawl{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+    .ti{display:flex;align-items:center;gap:.45rem;font-size:.68rem;color:var(--muted);}
+    .ti b{color:var(--text2);font-family:'IBM Plex Mono',monospace;font-weight:400;}
+    .ti-sep{width:4px;height:4px;border-radius:50%;background:var(--muted2);}
+  </style>
+</head>
+<body>
+
+<div class="monitor">
+  <div class="gold-rule"></div>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="tb-brand">
+      <div class="tb-crest">🏛</div>
+      <div>
+        <div class="tb-name">Banco<span>Sys</span></div>
+        <div class="tb-sub">Monitor de Sala</div>
+      </div>
+    </div>
+    <div id="tb-clock">--:--:--</div>
+    <div class="tb-right">
+      <div>
+        <div id="tb-date" class="tb-date">—</div>
+        <div class="live-badge"><div class="live-dot"></div>En línea</div>
+      </div>
+      <a class="back-link" href="index.html">← Inicio</a>
+    </div>
+  </div>
+
+  <!-- CALLING HERO -->
+  <div class="calling-zone">
+    <div class="corner c-tl"></div>
+    <div class="corner c-tr"></div>
+    <div class="corner c-bl"></div>
+    <div class="corner c-br"></div>
+    <div class="calling-label">▶ Turno en atención</div>
+    <div class="calling-number idle" id="calling-num">· · ·</div>
+    <div class="calling-module" id="calling-mod"></div>
+  </div>
+
+  <!-- BOARD -->
+  <div class="board">
+    <div class="col">
+      <div class="col-head">
+        <div class="ch-title" style="color:var(--amber)">⏳ En Espera</div>
+        <div class="ch-cnt" id="cnt-e" style="color:var(--amber)">0</div>
+      </div>
+      <div class="col-body" id="list-e">
+        <div class="t-empty">— Sin turnos en espera —</div>
+      </div>
+    </div>
+    <div class="col-divider"></div>
+    <div class="col">
+      <div class="col-head">
+        <div class="ch-title" style="color:var(--green2)">✓ Atendidos Hoy</div>
+        <div class="ch-cnt" id="cnt-a" style="color:var(--green2)">0</div>
+      </div>
+      <div class="col-body" id="list-a">
+        <div class="t-empty">— Sin registros aún —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKER -->
+  <div class="ticker-bar">
+    <div class="ticker-flag">EN VIVO</div>
+    <div class="ticker-scroll">
+      <div class="ti"><span class="ti-sep"></span>En espera <b id="te1">0</b></div>
+      <div class="ti"><span class="ti-sep"></span>En atención <b id="ta1">0</b></div>
+      <div class="ti"><span class="ti-sep"></span>Atendidos hoy <b id="th1">0</b></div>
+      <div class="ti"><span class="ti-sep"></span>BancoSys — Sistema operativo</div>
+      <div class="ti"><span class="ti-sep"></span>En espera <b id="te2">0</b></div>
+      <div class="ti"><span class="ti-sep"></span>En atención <b id="ta2">0</b></div>
+      <div class="ti"><span class="ti-sep"></span>Atendidos hoy <b id="th2">0</b></div>
+      <div class="ti"><span class="ti-sep"></span>BancoSys — Sistema operativo</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function fmt(iso){ return new Date(iso).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true}); }
+  let prevCall = null;
+
+  function tick(){
+    const n = new Date();
+    document.getElementById('tb-clock').textContent =
+      n.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+    document.getElementById('tb-date').textContent =
+      n.toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short'}).toUpperCase();
+  }
+  setInterval(tick,1000); tick();
+
+  function render(){
+    const all = JSON.parse(localStorage.getItem('bancosys_turnos')||'[]');
+    const hoy = new Date().toDateString();
+    const h   = all.filter(t=>new Date(t.fecha).toDateString()===hoy);
+    const espera   = h.filter(t=>t.estado==='espera');
+    const llamando = h.filter(t=>t.estado==='llamando');
+    const atendidos= h.filter(t=>t.estado==='atendido').reverse().slice(0,8);
+
+    // Counters
+    document.getElementById('cnt-e').textContent = espera.length;
+    document.getElementById('cnt-a').textContent = atendidos.length;
+    ['te1','te2'].forEach(i=>document.getElementById(i).textContent=espera.length);
+    ['ta1','ta2'].forEach(i=>document.getElementById(i).textContent=llamando.length);
+    ['th1','th2'].forEach(i=>document.getElementById(i).textContent=atendidos.length);
+
+    // Calling hero
+    const activo = llamando[0]||null;
+    const numEl  = document.getElementById('calling-num');
+    const modEl  = document.getElementById('calling-mod');
+    if(activo){
+      if(activo.folio !== prevCall){
+        numEl.className='calling-number';
+        numEl.textContent = activo.folio;
+        modEl.textContent = activo.modulo ? activo.modulo.toUpperCase() : '';
+        numEl.style.textShadow='0 0 60px rgba(200,169,74,.9), 0 0 120px rgba(200,169,74,.3)';
+        setTimeout(()=>{ numEl.style.textShadow=''; }, 1000);
+        prevCall = activo.folio;
+      }
+    } else {
+      numEl.className='calling-number idle';
+      numEl.textContent='· · ·';
+      modEl.textContent='';
+      prevCall = null;
+    }
+
+    // Espera list
+    document.getElementById('list-e').innerHTML = espera.length
+      ? espera.map(t=>`
+          <div class="t-row">
+            <div class="t-left">
+              <div class="t-folio fw">${t.folio}</div>
+              <div><div class="t-mod">${t.modulo}</div><div class="t-time">${fmt(t.fecha)}</div></div>
+            </div>
+            <span class="tag tag-w">PEND</span>
+          </div>`).join('')
+      : '<div class="t-empty">— Sin turnos en espera —</div>';
+
+    // Atendidos list
+    document.getElementById('list-a').innerHTML = atendidos.length
+      ? atendidos.map(t=>`
+          <div class="t-row">
+            <div class="t-left">
+              <div class="t-folio fa">${t.folio}</div>
+              <div><div class="t-mod">${t.modulo}</div><div class="t-time">${fmt(t.fecha)}</div></div>
+            </div>
+            <span class="tag tag-a">OK</span>
+          </div>`).join('')
+      : '<div class="t-empty">— Sin registros aún —</div>';
+  }
+
+  render(); setInterval(render, 2500);
+</script>
+</body>
+</html>

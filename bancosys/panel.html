@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Panel Ejecutivo — BancoSys</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:#0a1628;--navy2:#0e1e38;--navy3:#122245;
+      --card:#111e35;--card2:#162340;--border:#1c3058;--border2:#224070;
+      --gold:#c8a94a;--gold2:#e2c568;--gold-dim:#c8a94a14;--gold-glow:#c8a94a28;
+      --cream:#f4efe4;--blue2:#2880cc;--blue-dim:#2880cc14;
+      --green:#1a9e5c;--green2:#22c57a;--green-dim:#22c57a12;
+      --red:#c0392b;--amber:#d4880a;--amber-dim:#d4880a14;
+      --text:#e8edf8;--text2:#a8b8d0;--muted:#4a6488;--muted2:#304e70;
+    }
+    html,body{height:100%;}
+    body{font-family:'IBM Plex Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:repeating-linear-gradient(0deg,transparent,transparent 47px,rgba(200,169,74,.025) 47px,rgba(200,169,74,.025) 48px),repeating-linear-gradient(90deg,transparent,transparent 47px,rgba(200,169,74,.025) 47px,rgba(200,169,74,.025) 48px);}
+
+    /* HEADER */
+    .site-header{position:sticky;top:0;z-index:50;background:rgba(10,22,40,.98);border-bottom:1px solid var(--border);}
+    .gold-rule{height:3px;background:linear-gradient(90deg,transparent,var(--gold),var(--gold2),var(--gold),transparent);}
+    .header-inner{max-width:100%;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;}
+    .logo{display:flex;align-items:center;gap:.85rem;text-decoration:none;}
+    .logo-crest{width:38px;height:38px;background:linear-gradient(135deg,var(--navy3),var(--navy2));border:1.5px solid var(--gold);border-radius:8px;display:grid;place-items:center;font-size:1rem;box-shadow:0 0 10px var(--gold-glow);}
+    .logo-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:var(--cream);}
+    .logo-name span{color:var(--gold2);}
+    .logo-sub2{font-size:.56rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+    .header-right{display:flex;align-items:center;gap:.85rem;}
+    #clock{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--text2);}
+    .session-chip{display:flex;align-items:center;gap:.5rem;background:var(--card2);border:1px solid var(--border2);border-radius:7px;padding:.3rem .8rem;font-size:.75rem;font-weight:500;}
+    .s-dot{width:7px;height:7px;border-radius:50%;background:var(--green2);animation:blink 2s infinite;}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+    .btn-header{display:flex;align-items:center;gap:.35rem;background:transparent;border:1px solid var(--border2);border-radius:7px;color:var(--muted);font-family:'IBM Plex Sans',sans-serif;font-size:.72rem;font-weight:500;padding:.35rem .8rem;cursor:pointer;transition:all .2s;text-decoration:none;}
+    .btn-header:hover{border-color:var(--red);color:#e74c3c;}
+    .btn-header-gold{border-color:rgba(200,169,74,.3);color:var(--muted);}
+    .btn-header-gold:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
+
+    /* LAYOUT */
+    .main-layout{position:relative;z-index:5;display:grid;grid-template-columns:1fr 320px;flex:1;min-height:0;}
+
+    /* LEFT */
+    .left-panel{padding:2rem 2.5rem 2rem;overflow-y:auto;border-right:1px solid var(--border2);}
+
+    /* Active turno card */
+    .turno-card{
+      background:var(--card2);border:1px solid var(--border2);border-radius:16px;
+      padding:1.75rem 2rem;margin-bottom:2rem;
+      display:grid;grid-template-columns:auto 1fr;gap:1.75rem;align-items:center;
+      position:relative;overflow:hidden;
+    }
+    .turno-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--gold),var(--gold2));box-shadow:2px 0 12px var(--gold-glow);}
+    .tc-number{font-family:'Cormorant Garamond',serif;font-size:4.5rem;font-weight:700;color:var(--gold2);line-height:1;text-shadow:0 0 20px var(--gold-glow);min-width:110px;}
+    .tc-number.empty{color:var(--muted2);font-size:3rem;}
+    .tc-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.58rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(200,169,74,.2);border-radius:4px;padding:.2rem .55rem;margin-bottom:.5rem;}
+    .tc-title{font-size:1rem;font-weight:600;margin-bottom:.15rem;}
+    .tc-sub{font-size:.78rem;color:var(--muted);}
+
+    /* Actions */
+    .action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;margin-bottom:2rem;}
+    .btn-action{
+      padding:.9rem .5rem;border:none;border-radius:10px;
+      font-family:'IBM Plex Sans',sans-serif;font-size:.85rem;font-weight:600;
+      cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.3rem;
+      transition:all .2s;
+    }
+    .btn-action .i{font-size:1.2rem;}
+    .ba-call{background:linear-gradient(135deg,#0e4a8a,#1a5fa0);color:var(--cream);border:1px solid var(--blue2);box-shadow:0 4px 16px rgba(40,128,204,.2);}
+    .ba-call:hover{box-shadow:0 6px 24px rgba(40,128,204,.35);}
+    .ba-ok{background:linear-gradient(135deg,#0d5c2e,#1a8044);color:var(--cream);border:1px solid var(--green2);box-shadow:0 4px 16px rgba(34,197,122,.15);}
+    .ba-ok:hover{box-shadow:0 6px 24px rgba(34,197,122,.28);}
+    .ba-skip{background:var(--card2);border:1px solid var(--border2);color:var(--muted);}
+    .ba-skip:hover{border-color:var(--amber);color:var(--amber);}
+    .btn-action:disabled{opacity:.28;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
+
+    /* Queue */
+    .q-label{font-size:.6rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.85rem;display:flex;align-items:center;gap:.5rem;}
+    .q-label::before{content:'';width:16px;height:1px;background:var(--muted2);}
+    .q-row{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.8rem 1rem;margin-bottom:.45rem;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s;}
+    .q-row.calling{border-color:var(--blue2);background:var(--blue-dim);}
+    .q-left{display:flex;align-items:center;gap:.75rem;}
+    .q-folio{font-family:'IBM Plex Mono',monospace;font-size:.95rem;font-weight:500;min-width:46px;}
+    .qf-call{color:var(--blue2);}
+    .qf-wait{color:var(--amber);}
+    .q-mod{font-size:.82rem;font-weight:500;}
+    .q-time{font-size:.68rem;color:var(--muted);}
+    .tag{font-family:'IBM Plex Mono',monospace;font-size:.55rem;letter-spacing:.5px;text-transform:uppercase;border-radius:4px;padding:.15rem .45rem;border:1px solid currentColor;}
+    .tag-c{color:var(--blue2);background:var(--blue-dim);}
+    .tag-e{color:var(--amber);background:var(--amber-dim);}
+    .empty-q{text-align:center;padding:3rem;color:var(--muted);font-size:.82rem;border:1px dashed var(--border2);border-radius:10px;}
+
+    /* RIGHT sidebar */
+    .right-panel{padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem;overflow-y:auto;}
+    .widget{background:var(--card2);border:1px solid var(--border2);border-radius:12px;overflow:hidden;}
+    .w-head{
+      padding:.75rem 1rem;border-bottom:1px solid var(--border);
+      font-size:.58rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .w-body{padding:1rem;}
+    .w-stat{display:flex;align-items:center;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid var(--border);}
+    .w-stat:last-child{border-bottom:none;}
+    .ws-lbl{font-size:.78rem;color:var(--muted);}
+    .ws-val{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:500;}
+    .att-item{display:flex;align-items:center;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid var(--border);}
+    .att-item:last-child{border-bottom:none;}
+    .ai-folio{font-family:'IBM Plex Mono',monospace;font-size:.88rem;font-weight:500;color:var(--green2);}
+    .ai-sub{font-size:.7rem;color:var(--muted);}
+    .empty-s{text-align:center;padding:1rem;font-size:.72rem;color:var(--muted2);}
+
+    /* Reset confirm */
+    .overlay-confirm{position:fixed;inset:0;z-index:500;background:rgba(5,10,20,.9);backdrop-filter:blur(10px);display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+    .overlay-confirm.open{opacity:1;pointer-events:all;}
+    .dialog{background:var(--card2);border:1px solid var(--border2);border-radius:16px;width:400px;max-width:92%;padding:2.5rem 2rem;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.6);transform:scale(.9);transition:transform .3s cubic-bezier(.16,1,.3,1);}
+    .overlay-confirm.open .dialog{transform:scale(1);}
+    .d-icon{font-size:2.5rem;margin-bottom:1rem;}
+    .d-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:var(--cream);margin-bottom:.5rem;}
+    .d-desc{font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:2rem;}
+    .d-desc strong{color:var(--text2);}
+    .d-btns{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+    .btn-dc{padding:.75rem;border:1px solid var(--border2);border-radius:8px;background:transparent;color:var(--text2);font-family:'IBM Plex Sans',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;transition:all .2s;}
+    .btn-dc:hover{border-color:var(--text2);}
+    .btn-dr{padding:.75rem;border:none;border-radius:8px;background:var(--red);color:#fff;font-family:'IBM Plex Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:background .2s;}
+    .btn-dr:hover{background:#a93226;}
+  </style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="gold-rule"></div>
+  <div class="header-inner">
+    <a class="logo" href="index.html">
+      <div class="logo-crest">🏛</div>
+      <div>
+        <div class="logo-name">Banco<span>Sys</span></div>
+        <div class="logo-sub2">Panel de Ejecutivo</div>
+      </div>
+    </a>
+    <div class="header-right">
+      <div id="clock">--:--:--</div>
+      <div class="session-chip"><div class="s-dot"></div><span id="sname">Ejecutivo</span></div>
+      <button class="btn-header btn-header-gold" onclick="openReset()">⚠ Finalizar Jornada</button>
+      <a class="back-btn btn-header" href="index.html">← Inicio</a>
+      <button class="btn-header" onclick="salir()">Cerrar sesión ↩</button>
+    </div>
+  </div>
+</div>
+
+<div class="main-layout">
+
+  <!-- LEFT -->
+  <div class="left-panel">
+
+    <!-- Turno activo -->
+    <div class="turno-card">
+      <div class="tc-number empty" id="tc-num">—</div>
+      <div>
+        <div class="tc-badge">Turno Activo</div>
+        <div class="tc-title" id="tc-title">Sin turno en proceso</div>
+        <div class="tc-sub" id="tc-sub">Presione "Llamar" para iniciar la atención</div>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="action-grid">
+      <button class="btn-action ba-call" id="b-call" onclick="llamar()">
+        <span class="i">📢</span>Llamar
+      </button>
+      <button class="btn-action ba-ok" id="b-ok" onclick="atender()" disabled>
+        <span class="i">✓</span>Atendido
+      </button>
+      <button class="btn-action ba-skip" id="b-skip" onclick="omitir()" disabled>
+        <span class="i">⏭</span>Omitir
+      </button>
+    </div>
+
+    <!-- Cola -->
+    <div class="q-label">Cola de espera</div>
+    <div id="queue-list"></div>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+
+    <div class="widget">
+      <div class="w-head">Estadísticas del día</div>
+      <div class="w-body">
+        <div class="w-stat"><span class="ws-lbl">En espera</span><span class="ws-val" id="ws-e" style="color:var(--amber)">0</span></div>
+        <div class="w-stat"><span class="ws-lbl">En atención</span><span class="ws-val" id="ws-l" style="color:var(--blue2)">0</span></div>
+        <div class="w-stat"><span class="ws-lbl">Atendidos hoy</span><span class="ws-val" id="ws-a" style="color:var(--green2)">0</span></div>
+      </div>
+    </div>
+
+    <div class="widget" style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+      <div class="w-head">Últimos atendidos</div>
+      <div class="w-body" style="flex:1;overflow-y:auto;" id="att-list">
+        <div class="empty-s">Sin registros aún</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- RESET CONFIRM -->
+<div class="overlay-confirm" id="confirm-overlay">
+  <div class="dialog">
+    <div class="d-icon">⚠️</div>
+    <div class="d-title">Finalizar Jornada</div>
+    <p class="d-desc">Esta acción <strong>eliminará todos los turnos del día actual</strong> y reiniciará los contadores. No se puede deshacer.</p>
+    <div class="d-btns">
+      <button class="btn-dc" onclick="closeReset()">Cancelar</button>
+      <button class="btn-dr" onclick="resetDay()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const session = JSON.parse(localStorage.getItem('bancosys_session')||'null');
+  if(!session) window.location.href='login.html';
+  else document.getElementById('sname').textContent = session.nombre||session.user||'Ejecutivo';
+
+  let activo = null;
+
+  function salir(){ localStorage.removeItem('bancosys_session'); window.location.href='login.html'; }
+  function openReset(){ document.getElementById('confirm-overlay').classList.add('open'); }
+  function closeReset(){ document.getElementById('confirm-overlay').classList.remove('open'); }
+  function resetDay(){
+    localStorage.removeItem('bancosys_turnos');
+    closeReset(); render();
+  }
+
+  setInterval(()=>{
+    document.getElementById('clock').textContent =
+      new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+  },1000);
+
+  function fmt(iso){ return new Date(iso).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true}); }
+
+  function getHoy(){
+    const all=JSON.parse(localStorage.getItem('bancosys_turnos')||'[]');
+    const hoy=new Date().toDateString();
+    return all.filter(t=>new Date(t.fecha).toDateString()===hoy);
+  }
+  function saveHoy(arr){
+    const all=JSON.parse(localStorage.getItem('bancosys_turnos')||'[]');
+    const hoy=new Date().toDateString();
+    const otros=all.filter(t=>new Date(t.fecha).toDateString()!==hoy);
+    localStorage.setItem('bancosys_turnos',JSON.stringify([...otros,...arr]));
+  }
+
+  function render(){
+    const h=getHoy();
+    const espera=h.filter(t=>t.estado==='espera');
+    const llamando=h.filter(t=>t.estado==='llamando');
+    const atendidos=h.filter(t=>t.estado==='atendido').reverse().slice(0,10);
+    activo=llamando[0]||null;
+
+    // Stats
+    document.getElementById('ws-e').textContent=espera.length;
+    document.getElementById('ws-l').textContent=llamando.length;
+    document.getElementById('ws-a').textContent=atendidos.length;
+
+    // Turno card
+    const numEl=document.getElementById('tc-num');
+    if(activo){
+      numEl.textContent=activo.folio; numEl.className='tc-number';
+      document.getElementById('tc-title').textContent=activo.modulo+(activo.motivo?' — '+activo.motivo:'');
+      document.getElementById('tc-sub').textContent='Llamado a las '+fmt(activo.fecha);
+      document.getElementById('b-ok').disabled=false;
+      document.getElementById('b-skip').disabled=false;
+    } else {
+      numEl.textContent='—'; numEl.className='tc-number empty';
+      document.getElementById('tc-title').textContent='Sin turno en proceso';
+      document.getElementById('tc-sub').textContent='Presione "Llamar" para iniciar la atención';
+      document.getElementById('b-ok').disabled=true;
+      document.getElementById('b-skip').disabled=true;
+    }
+    document.getElementById('b-call').disabled=espera.length===0&&!activo;
+
+    // Queue
+    const qEl=document.getElementById('queue-list');
+    const rows=[];
+    if(activo) rows.push(`<div class="q-row calling"><div class="q-left"><div class="q-folio qf-call">${activo.folio}</div><div><div class="q-mod">${activo.modulo}</div><div class="q-time">${fmt(activo.fecha)}</div></div></div><span class="tag tag-c">LLAMANDO</span></div>`);
+    espera.forEach(t=>rows.push(`<div class="q-row"><div class="q-left"><div class="q-folio qf-wait">${t.folio}</div><div><div class="q-mod">${t.modulo}</div><div class="q-time">Registrado ${fmt(t.fecha)}</div></div></div><span class="tag tag-e">ESPERA</span></div>`));
+    qEl.innerHTML=rows.length?rows.join(''):`<div class="empty-q">No hay turnos en cola</div>`;
+
+    // Atendidos
+    const aEl=document.getElementById('att-list');
+    aEl.innerHTML=atendidos.length
+      ?atendidos.map(t=>`<div class="att-item"><div><div class="ai-folio">${t.folio}</div><div class="ai-sub">${t.modulo}</div></div><div class="ai-sub">${fmt(t.fecha)}</div></div>`).join('')
+      :`<div class="empty-s">Sin registros aún</div>`;
+  }
+
+  function llamar(){
+    let h=getHoy();
+    h.filter(t=>t.estado==='llamando').forEach(t=>t.estado='espera');
+    const esp=h.filter(t=>t.estado==='espera');
+    if(!esp.length)return;
+    esp[0].estado='llamando';
+    saveHoy(h); render();
+  }
+  function atender(){
+    if(!activo)return;
+    let h=getHoy();
+    const t=h.find(x=>x.id===activo.id);
+    if(t)t.estado='atendido';
+    saveHoy(h); render();
+  }
+  function omitir(){
+    if(!activo)return;
+    let h=getHoy();
+    const i=h.findIndex(x=>x.id===activo.id);
+    if(i>-1){h[i].estado='espera';const t=h.splice(i,1)[0];h.push(t);}
+    saveHoy(h); render();
+  }
+
+  render(); setInterval(render,3000);
+</script>
+</body>
+</html>

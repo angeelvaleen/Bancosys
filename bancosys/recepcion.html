@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Recepción — BancoSys</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:#0a1628;--navy2:#0e1e38;--navy3:#122245;
+      --card:#111e35;--card2:#162340;--border:#1c3058;--border2:#224070;
+      --gold:#c8a94a;--gold2:#e2c568;--gold-dim:#c8a94a14;--gold-glow:#c8a94a28;
+      --cream:#f4efe4;--blue2:#2880cc;
+      --green:#1a9e5c;--green2:#22c57a;--green-dim:#22c57a12;--red:#c0392b;
+      --amber:#d4880a;
+      --text:#e8edf8;--text2:#a8b8d0;--muted:#4a6488;--muted2:#304e70;
+    }
+    html,body{height:100%;}
+    body{font-family:'IBM Plex Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:repeating-linear-gradient(0deg,transparent,transparent 47px,rgba(200,169,74,.03) 47px,rgba(200,169,74,.03) 48px),repeating-linear-gradient(90deg,transparent,transparent 47px,rgba(200,169,74,.03) 47px,rgba(200,169,74,.03) 48px);}
+
+    /* HEADER */
+    .site-header{position:sticky;top:0;z-index:50;background:rgba(10,22,40,.98);border-bottom:1px solid var(--border);}
+    .gold-rule{height:3px;background:linear-gradient(90deg,transparent,var(--gold),var(--gold2),var(--gold),transparent);}
+    .header-inner{max-width:1280px;margin:0 auto;padding:0 2.5rem;display:flex;align-items:center;justify-content:space-between;height:64px;}
+    .logo{display:flex;align-items:center;gap:.85rem;text-decoration:none;}
+    .logo-crest{width:38px;height:38px;background:linear-gradient(135deg,var(--navy3),var(--navy2));border:1.5px solid var(--gold);border-radius:8px;display:grid;place-items:center;font-size:1rem;box-shadow:0 0 10px var(--gold-glow);}
+    .logo-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:var(--cream);}
+    .logo-name span{color:var(--gold2);}
+    .logo-tagline{font-size:.56rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+    .header-right{display:flex;align-items:center;gap:1rem;}
+    #clock{font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:var(--text2);}
+    .role-chip{font-size:.62rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;background:var(--gold-dim);border:1px solid rgba(200,169,74,.25);color:var(--gold);border-radius:5px;padding:.25rem .65rem;}
+    .back-btn{display:flex;align-items:center;gap:.4rem;text-decoration:none;color:var(--muted);font-size:.75rem;font-weight:500;border:1px solid var(--border2);border-radius:7px;padding:.38rem .9rem;transition:all .2s;}
+    .back-btn:hover{color:var(--gold);border-color:var(--gold);background:var(--gold-dim);}
+
+    /* STATS STRIP */
+    .stats-strip{position:relative;z-index:5;background:var(--navy2);border-bottom:1px solid var(--border);}
+    .stats-inner{max-width:1280px;margin:0 auto;padding:0 2.5rem;display:flex;}
+    .st-item{flex:1;padding:.6rem 1.25rem;display:flex;align-items:center;gap:.6rem;border-right:1px solid var(--border);font-size:.78rem;}
+    .st-item:last-child{border-right:none;}
+    .st-pip{width:8px;height:8px;border-radius:50%;}
+    .st-lbl{color:var(--muted);flex:1;}
+    .st-num{font-family:'IBM Plex Mono',monospace;font-size:1rem;font-weight:500;}
+
+    /* MAIN LAYOUT */
+    .page-layout{position:relative;z-index:5;flex:1;display:grid;grid-template-columns:300px 1fr;min-height:0;}
+
+    /* SIDEBAR */
+    .sidebar{background:var(--navy2);border-right:1px solid var(--border2);padding:1.5rem 1.25rem;display:flex;flex-direction:column;gap:.5rem;overflow-y:auto;}
+    .sidebar-rule{font-size:.58rem;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--muted2);padding:.5rem .5rem .3rem;}
+    .area-card{
+      background:transparent;border:1px solid var(--border);border-radius:10px;
+      padding:.95rem 1rem;cursor:pointer;color:var(--text);
+      display:flex;align-items:center;gap:.85rem;
+      transition:all .22s;text-align:left;width:100%;
+    }
+    .area-card:hover{border-color:var(--gold);background:var(--gold-dim);}
+    .area-card.sel{border-color:var(--gold);background:var(--gold-dim);box-shadow:0 0 0 1px var(--gold);}
+    .area-badge{
+      width:36px;height:36px;border-radius:8px;
+      display:grid;place-items:center;
+      font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:.9rem;
+      flex-shrink:0;
+    }
+    .area-name{font-size:.88rem;font-weight:600;margin-bottom:.1rem;}
+    .area-sub{font-size:.68rem;color:var(--muted);}
+
+    /* MAIN CONTENT */
+    .main-content{padding:2rem 2.5rem 9rem;overflow-y:auto;}
+    .page-title{font-family:'Cormorant Garamond',serif;font-size:1.75rem;font-weight:700;color:var(--cream);margin-bottom:.25rem;}
+    .page-sub{font-size:.8rem;color:var(--muted);margin-bottom:2.25rem;}
+
+    .section-lbl{
+      font-size:.6rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;
+      color:var(--muted);margin-bottom:1rem;
+      display:flex;align-items:center;gap:.75rem;
+    }
+    .section-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
+
+    /* Motivo cards */
+    .motivos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem;}
+    .motivo-card{
+      background:var(--card);border:1px solid var(--border2);border-radius:12px;
+      padding:1.1rem;cursor:pointer;color:var(--text);text-align:left;
+      display:flex;flex-direction:column;gap:.35rem;
+      transition:all .2s;width:100%;
+    }
+    .motivo-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.25);}
+    .motivo-card.sel{border-color:var(--gold);background:var(--gold-dim);box-shadow:0 0 0 1px var(--gold);}
+    .motivo-icon{font-size:1.25rem;margin-bottom:.2rem;}
+    .motivo-name{font-size:.88rem;font-weight:600;color:var(--text);}
+    .motivo-desc{font-size:.7rem;color:var(--muted);line-height:1.45;}
+
+    .empty-state{
+      border:1px dashed var(--border2);border-radius:12px;padding:3.5rem;
+      text-align:center;color:var(--muted);font-size:.85rem;
+    }
+    .empty-arrow{font-size:1.5rem;margin-bottom:.5rem;opacity:.4;}
+
+    /* BOTTOM ACTION BAR */
+    .action-bar{
+      position:fixed;bottom:0;left:300px;right:0;
+      background:rgba(10,22,40,.98);border-top:1px solid var(--border2);
+      backdrop-filter:blur(16px);
+      padding:1rem 2.5rem;
+      display:flex;align-items:center;justify-content:space-between;
+      transform:translateY(110%);transition:transform .35s cubic-bezier(.16,1,.3,1);
+      z-index:50;
+    }
+    .action-bar.show{transform:translateY(0);}
+    .bar-info{display:flex;gap:2.5rem;}
+    .bi{display:flex;flex-direction:column;gap:.15rem;}
+    .bi-label{font-size:.6rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+    .bi-value{font-size:.95rem;font-weight:600;color:var(--text);}
+    .btn-emitir{
+      background:linear-gradient(135deg,var(--navy3),var(--navy2));
+      border:1px solid var(--gold);border-radius:9px;
+      color:var(--gold2);
+      font-family:'IBM Plex Sans',sans-serif;font-size:.92rem;font-weight:600;
+      padding:.85rem 2.25rem;cursor:pointer;
+      display:flex;align-items:center;gap:.5rem;
+      transition:all .2s;
+      box-shadow:0 0 0 0 var(--gold-dim);
+    }
+    .btn-emitir:hover{box-shadow:0 0 20px var(--gold-glow);background:linear-gradient(135deg,#1a2e58,#1e3570);}
+    .btn-emitir:active{transform:scale(.97);}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(5,10,20,.88);backdrop-filter:blur(8px);display:grid;place-items:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;}
+    .modal-overlay.open{opacity:1;pointer-events:all;}
+    .ticket-modal{
+      background:var(--card2);border:1px solid var(--border2);
+      border-radius:20px;width:380px;max-width:92%;
+      overflow:hidden;
+      transform:scale(.88) translateY(24px);transition:transform .3s cubic-bezier(.16,1,.3,1);
+      box-shadow:0 40px 100px rgba(0,0,0,.6);
+    }
+    .modal-overlay.open .ticket-modal{transform:scale(1) translateY(0);}
+    .ticket-header{
+      background:linear-gradient(135deg,var(--navy3),var(--navy2));
+      border-bottom:1px solid var(--gold-dim);
+      padding:2.25rem 2rem;text-align:center;
+    }
+    .t-check{width:54px;height:54px;border-radius:50%;background:var(--green-dim);border:2px solid var(--green2);display:grid;place-items:center;font-size:1.4rem;margin:0 auto .75rem;}
+    .t-status{font-size:.6rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem;}
+    .t-number{
+      font-family:'Cormorant Garamond',serif;
+      font-size:5rem;font-weight:700;color:var(--gold2);line-height:1;
+      text-shadow:0 0 30px var(--gold-glow);
+    }
+    .ticket-body{padding:1.5rem 2rem 2rem;}
+    .t-row{display:flex;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid var(--border);}
+    .t-row:last-of-type{border-bottom:none;}
+    .t-key{font-size:.62rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+    .t-val{font-size:.85rem;font-weight:600;color:var(--text);}
+    .btn-nuevo{width:100%;margin-top:1.5rem;padding:.8rem;border:1px solid var(--border2);border-radius:8px;background:transparent;color:var(--text2);font-family:'IBM Plex Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;}
+    .btn-nuevo:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
+  </style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="gold-rule"></div>
+  <div class="header-inner">
+    <a class="logo" href="index.html">
+      <div class="logo-crest">🏛</div>
+      <div>
+        <div class="logo-name">Banco<span>Sys</span></div>
+        <div class="logo-tagline">Sistema de Gestión de Turnos</div>
+      </div>
+    </a>
+    <div class="header-right">
+      <div id="clock">--:--:--</div>
+      <div class="role-chip">Recepción</div>
+      <a class="back-btn" href="index.html">← Volver</a>
+    </div>
+  </div>
+</div>
+
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="st-item"><div class="st-pip" style="background:#d4880a"></div><span class="st-lbl">En espera</span><span class="st-num" id="cnt-e" style="color:#f0a30a">0</span></div>
+    <div class="st-item"><div class="st-pip" style="background:var(--blue2)"></div><span class="st-lbl">En atención</span><span class="st-num" id="cnt-a" style="color:var(--blue2)">0</span></div>
+    <div class="st-item"><div class="st-pip" style="background:var(--green2)"></div><span class="st-lbl">Atendidos hoy</span><span class="st-num" id="cnt-h" style="color:var(--green2)">0</span></div>
+  </div>
+</div>
+
+<div class="page-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-rule">Áreas de atención</div>
+    <div id="areas-list"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="page-title">Nuevo Turno</div>
+    <p class="page-sub">Seleccione el área en el panel izquierdo y luego el motivo de la visita del cliente.</p>
+    <div id="motivos-wrap">
+      <div class="empty-state">
+        <div class="empty-arrow">←</div>
+        Seleccione un área para continuar
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<!-- ACTION BAR -->
+<div class="action-bar" id="action-bar">
+  <div class="bar-info">
+    <div class="bi"><span class="bi-label">Área</span><span class="bi-value" id="bar-area">—</span></div>
+    <div class="bi"><span class="bi-label">Motivo</span><span class="bi-value" id="bar-motivo">—</span></div>
+  </div>
+  <button class="btn-emitir" onclick="emitirTurno()">🎟 Emitir Turno</button>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="ticket-modal">
+    <div class="ticket-header">
+      <div class="t-check">✓</div>
+      <div class="t-status">Turno emitido correctamente</div>
+      <div class="t-number" id="t-number">—</div>
+    </div>
+    <div class="ticket-body">
+      <div class="t-row"><span class="t-key">Área</span><span class="t-val" id="t-area">—</span></div>
+      <div class="t-row"><span class="t-key">Motivo</span><span class="t-val" id="t-motivo">—</span></div>
+      <div class="t-row"><span class="t-key">Hora</span><span class="t-val" id="t-hora">—</span></div>
+      <button class="btn-nuevo" onclick="nuevoTurno()">↺ Generar otro turno</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── DATOS — reemplazar con fetch a PHP ─────── */
+const AREAS = [
+  {
+    id:1, nombre:'Caja', prefijo:'C', color:'#c8a94a',
+    motivos:[
+      {nombre:'Depósito',           desc:'Depósito a cuenta propia o terceros',    icon:'💵'},
+      {nombre:'Retiro',             desc:'Retiro de efectivo de la cuenta',         icon:'🏧'},
+      {nombre:'Cambio de efectivo', desc:'Cambio de denominaciones monetarias',     icon:'🔄'},
+      {nombre:'Queja o aclaración', desc:'Aclaración de operaciones realizadas',    icon:'📋'},
+    ]
+  },
+  {
+    id:2, nombre:'Ejecutivo', prefijo:'E', color:'#2880cc',
+    motivos:[
+      {nombre:'Alta de cuenta',       desc:'Apertura de cuenta bancaria o tarjeta', icon:'📂'},
+      {nombre:'Crédito personal',     desc:'Solicitud o consulta de crédito',        icon:'💳'},
+      {nombre:'Baja de cuenta',       desc:'Cancelación de cuenta o tarjeta',        icon:'🗑'},
+      {nombre:'Desbloqueo',           desc:'Desbloqueo de cuenta o tarjeta',         icon:'🔓'},
+    ]
+  },
+];
+/* ─────────────────────────────────────────── */
+
+let selArea = null, selMot = null;
+
+setInterval(()=>{
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+},1000);
+
+function syncStats(){
+  const all=JSON.parse(localStorage.getItem('bancosys_turnos')||'[]');
+  const hoy=new Date().toDateString();
+  const h=all.filter(t=>new Date(t.fecha).toDateString()===hoy);
+  document.getElementById('cnt-e').textContent=h.filter(t=>t.estado==='espera').length;
+  document.getElementById('cnt-a').textContent=h.filter(t=>t.estado==='llamando').length;
+  document.getElementById('cnt-h').textContent=h.filter(t=>t.estado==='atendido').length;
+}
+syncStats(); setInterval(syncStats,3000);
+
+// Render areas
+document.getElementById('areas-list').innerHTML = AREAS.map(a=>`
+  <button class="area-card" id="ac-${a.id}" onclick="pickArea(${a.id})">
+    <div class="area-badge" style="background:${a.color}18;color:${a.color};border:1px solid ${a.color}40">${a.prefijo}</div>
+    <div>
+      <div class="area-name">${a.nombre}</div>
+      <div class="area-sub">Área de ${a.nombre.toLowerCase()}</div>
+    </div>
+  </button>`).join('');
+
+function pickArea(id){
+  selArea=AREAS.find(a=>a.id===id); selMot=null;
+  document.querySelectorAll('.area-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById(`ac-${id}`).classList.add('sel');
+  const wrap=document.getElementById('motivos-wrap');
+  wrap.innerHTML=`
+    <div class="section-lbl">${selArea.nombre} — Seleccione el motivo de visita</div>
+    <div class="motivos-grid">
+      ${selArea.motivos.map((m,i)=>`
+        <button class="motivo-card" id="mc-${i}" onclick="pickMot(${i},'${m.nombre.replace(/'/,"\\'")  }')">
+          <div class="motivo-icon">${m.icon}</div>
+          <div class="motivo-name">${m.nombre}</div>
+          <div class="motivo-desc">${m.desc}</div>
+        </button>`).join('')}
+    </div>`;
+  updateBar();
+}
+function pickMot(i,nom){
+  selMot=nom;
+  document.querySelectorAll('.motivo-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById(`mc-${i}`).classList.add('sel');
+  updateBar();
+}
+function updateBar(){
+  const bar=document.getElementById('action-bar');
+  if(selArea&&selMot){
+    document.getElementById('bar-area').textContent=selArea.nombre;
+    document.getElementById('bar-motivo').textContent=selMot;
+    bar.classList.add('show');
+  } else bar.classList.remove('show');
+}
+function emitirTurno(){
+  if(!selArea||!selMot)return;
+  const all=JSON.parse(localStorage.getItem('bancosys_turnos')||'[]');
+  const hoy=new Date().toDateString();
+  const n=all.filter(t=>new Date(t.fecha).toDateString()===hoy&&t.prefijo===selArea.prefijo).length+1;
+  const folio=selArea.prefijo+String(n).padStart(3,'0');
+  all.push({id:Date.now(),folio,prefijo:selArea.prefijo,modulo:selArea.nombre,motivo:selMot,estado:'espera',fecha:new Date().toISOString()});
+  localStorage.setItem('bancosys_turnos',JSON.stringify(all));
+  // show modal
+  document.getElementById('t-number').textContent=folio;
+  document.getElementById('t-area').textContent=selArea.nombre;
+  document.getElementById('t-motivo').textContent=selMot;
+  document.getElementById('t-hora').textContent=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true});
+  document.getElementById('modal-overlay').classList.add('open');
+  syncStats();
+}
+function nuevoTurno(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById('action-bar').classList.remove('show');
+  document.querySelectorAll('.area-card,.motivo-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('motivos-wrap').innerHTML=`<div class="empty-state"><div class="empty-arrow">←</div>Seleccione un área para continuar</div>`;
+  selArea=null; selMot=null;
+}
+</script>
+</body>
+</html>

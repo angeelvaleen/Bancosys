@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>BancoSys — Sistema de Atención al Cliente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:    #0a1628;
+      --navy2:   #0e1e38;
+      --navy3:   #122245;
+      --card:    #111e35;
+      --border:  #1c3058;
+      --border2: #224070;
+      --gold:    #c8a94a;
+      --gold2:   #e2c568;
+      --gold3:   #f0d98a;
+      --gold-dim:#c8a94a14;
+      --gold-glow:#c8a94a28;
+      --cream:   #f4efe4;
+      --cream2:  #e8dfc8;
+      --blue:    #1e6fb5;
+      --blue2:   #2880cc;
+      --green:   #1a9e5c;
+      --green2:  #22c57a;
+      --red:     #c0392b;
+      --amber:   #d4880a;
+      --text:    #e8edf8;
+      --text2:   #a8b8d0;
+      --muted:   #4a6488;
+      --muted2:  #304e70;
+    }
+    html, body { height: 100%; }
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ── Subtle crosshatch texture ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 47px, rgba(200,169,74,.04) 47px, rgba(200,169,74,.04) 48px),
+        repeating-linear-gradient(90deg, transparent, transparent 47px, rgba(200,169,74,.04) 47px, rgba(200,169,74,.04) 48px);
+    }
+    /* Top blue radial */
+    body::after {
+      content: ''; position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+      width: 1000px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(30,111,181,.1) 0%, transparent 70%);
+      z-index: 0; pointer-events: none;
+    }
+
+    /* ══ HEADER ══════════════════════════════════════ */
+    .site-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,22,40,.97);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .gold-rule { height: 3px; background: linear-gradient(90deg, transparent 0%, var(--gold) 20%, var(--gold2) 50%, var(--gold) 80%, transparent 100%); }
+    .header-inner {
+      max-width: 1280px; margin: 0 auto;
+      padding: 0 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .logo { display: flex; align-items: center; gap: 1rem; text-decoration: none; }
+    .logo-crest {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--navy3), var(--navy2));
+      border: 1.5px solid var(--gold);
+      border-radius: 8px;
+      display: grid; place-items: center;
+      font-size: 1.1rem;
+      box-shadow: 0 0 14px var(--gold-glow), inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    .logo-wordmark { line-height: 1.15; }
+    .logo-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem; font-weight: 700; color: var(--cream);
+      letter-spacing: .5px;
+    }
+    .logo-name span { color: var(--gold2); }
+    .logo-tagline { font-size: .58rem; letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+
+    .header-right { display: flex; align-items: center; gap: 1.25rem; }
+    #main-clock {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .82rem; color: var(--text2);
+      font-variant-numeric: tabular-nums; letter-spacing: .5px;
+    }
+    .live-indicator {
+      display: flex; align-items: center; gap: .35rem;
+      font-size: .65rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--green2);
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green2); box-shadow: 0 0 6px var(--green2);
+      animation: liveblink 2s ease-in-out infinite;
+    }
+    @keyframes liveblink { 0%,100%{opacity:1;} 50%{opacity:.25;} }
+
+    .btn-reset {
+      display: flex; align-items: center; gap: .4rem;
+      background: transparent; border: 1px solid var(--border2);
+      border-radius: 7px; color: var(--muted);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: .72rem; font-weight: 500;
+      padding: .38rem .85rem; cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-reset:hover { border-color: var(--red); color: #e74c3c; background: rgba(192,57,43,.07); }
+
+    /* ══ STATS BAR ════════════════════════════════════ */
+    .stats-bar {
+      position: relative; z-index: 5;
+      background: var(--navy2);
+      border-bottom: 1px solid var(--border);
+    }
+    .stats-inner {
+      max-width: 1280px; margin: 0 auto;
+      padding: 0 2.5rem;
+      display: flex;
+    }
+    .stat-item {
+      flex: 1; padding: .65rem 1.5rem;
+      display: flex; align-items: center; gap: .75rem;
+      border-right: 1px solid var(--border);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-pip {
+      width: 10px; height: 10px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .stat-lbl { font-size: .72rem; color: var(--muted); flex: 1; }
+    .stat-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.1rem; font-weight: 500;
+    }
+
+    /* ══ HERO ═════════════════════════════════════════ */
+    .hero {
+      position: relative; z-index: 5;
+      max-width: 1280px; margin: 0 auto; width: 100%;
+      padding: 5rem 2.5rem 4rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+    }
+    .hero-eyebrow {
+      display: flex; align-items: center; gap: .65rem;
+      font-size: .65rem; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 1.5rem;
+    }
+    .hero-eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--gold); }
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 5vw, 5.5rem);
+      font-weight: 700; line-height: 1.0; letter-spacing: -.5px;
+      color: var(--cream); margin-bottom: 1.5rem;
+    }
+    h1 em { font-style: italic; color: var(--gold2); }
+    .hero-desc {
+      font-size: .92rem; color: var(--muted);
+      line-height: 1.75; max-width: 420px; margin-bottom: 2.5rem;
+    }
+    .hero-date {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .72rem; color: var(--muted2);
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+
+    /* Right decorative element */
+    .hero-ornament {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;
+    }
+    .ornament-ring {
+      width: 220px; height: 220px; border-radius: 50%;
+      border: 1px solid var(--border2);
+      display: grid; place-items: center; position: relative;
+    }
+    .ornament-ring::before {
+      content: '';
+      position: absolute; inset: 12px; border-radius: 50%;
+      border: 1px solid var(--gold-dim);
+    }
+    .ornament-inner {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem; font-weight: 700; color: var(--gold-dim);
+      line-height: 1;
+    }
+    .ornament-label {
+      font-size: .62rem; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--muted2); text-align: center;
+    }
+
+    /* ══ MODULE CARDS ═════════════════════════════════ */
+    .modules-section {
+      position: relative; z-index: 5;
+      max-width: 1280px; margin: 0 auto; width: 100%;
+      padding: 0 2.5rem 5rem;
+    }
+    .section-rule {
+      display: flex; align-items: center; gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .rule-label {
+      font-size: .62rem; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--muted); white-space: nowrap;
+    }
+    .rule-line { flex: 1; height: 1px; background: var(--border); }
+
+    .modules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    .module-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem 1.75rem;
+      display: flex; flex-direction: column;
+      text-decoration: none; color: var(--text);
+      position: relative; overflow: hidden;
+      transition: transform .25s, border-color .25s, box-shadow .25s;
+      cursor: pointer;
+    }
+    /* Gold top bar on hover */
+    .module-card::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--mc-accent, var(--gold));
+      transform: scaleX(0); transform-origin: left;
+      transition: transform .3s ease;
+    }
+    .module-card:hover { transform: translateY(-4px); border-color: var(--mc-accent, var(--gold)); box-shadow: 0 16px 48px rgba(0,0,0,.35); }
+    .module-card:hover::after { transform: scaleX(1); }
+
+    .mc-seq {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .6rem; color: var(--muted2); letter-spacing: 2px;
+      margin-bottom: 2rem;
+    }
+    .mc-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      border: 1px solid var(--border2);
+      display: grid; place-items: center; font-size: 1.35rem;
+      margin-bottom: 1.25rem;
+    }
+    .mc-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem; font-weight: 700; color: var(--cream);
+      margin-bottom: .5rem; letter-spacing: .2px;
+    }
+    .mc-desc { font-size: .78rem; color: var(--muted); line-height: 1.65; flex: 1; margin-bottom: 1.5rem; }
+    .mc-badge {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-size: .62rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+      padding: .28rem .7rem; border-radius: 5px; border: 1px solid currentColor;
+      width: fit-content;
+    }
+
+    /* ══ TICKER ═══════════════════════════════════════ */
+    .news-ticker {
+      position: relative; z-index: 5; margin-top: auto;
+      background: var(--navy2); border-top: 1px solid var(--border);
+      height: 38px; display: flex; align-items: center; overflow: hidden;
+    }
+    .ticker-flag {
+      background: var(--gold); color: var(--navy);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .6rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+      padding: 0 1.25rem; height: 100%; display: flex; align-items: center;
+      flex-shrink: 0; white-space: nowrap;
+    }
+    .ticker-items {
+      display: flex; gap: 3.5rem; padding: 0 2rem;
+      animation: crawl 26s linear infinite; white-space: nowrap;
+    }
+    @keyframes crawl { from{transform:translateX(0);} to{transform:translateX(-50%);} }
+    .tick-item { display: flex; align-items: center; gap: .5rem; font-size: .74rem; color: var(--muted); }
+    .tick-item strong { color: var(--text2); font-family: 'IBM Plex Mono', monospace; font-weight: 500; }
+    .tick-sep { width: 4px; height: 4px; border-radius: 50%; background: var(--muted2); }
+
+    /* ══ CONFIRM DIALOG ═══════════════════════════════ */
+    .overlay-confirm {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(5,10,20,.9); backdrop-filter: blur(10px);
+      display: grid; place-items: center;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .overlay-confirm.open { opacity: 1; pointer-events: all; }
+    .dialog {
+      background: var(--card); border: 1px solid var(--border2);
+      border-radius: 16px; width: 400px; max-width: 92%;
+      padding: 2.5rem 2rem; text-align: center;
+      box-shadow: 0 32px 80px rgba(0,0,0,.6);
+      transform: scale(.9) translateY(20px); transition: transform .3s cubic-bezier(.16,1,.3,1);
+    }
+    .overlay-confirm.open .dialog { transform: scale(1) translateY(0); }
+    .dialog-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .dialog-title { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 700; color: var(--cream); margin-bottom: .5rem; }
+    .dialog-desc { font-size: .82rem; color: var(--muted); line-height: 1.6; margin-bottom: 2rem; }
+    .dialog-desc strong { color: var(--text2); }
+    .dialog-btns { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .btn-dialog-cancel {
+      padding: .75rem; border: 1px solid var(--border2); border-radius: 8px;
+      background: transparent; color: var(--text2);
+      font-family: 'IBM Plex Sans', sans-serif; font-size: .85rem; font-weight: 500;
+      cursor: pointer; transition: all .2s;
+    }
+    .btn-dialog-cancel:hover { border-color: var(--text2); }
+    .btn-dialog-red {
+      padding: .75rem; border: none; border-radius: 8px;
+      background: var(--red); color: #fff;
+      font-family: 'IBM Plex Sans', sans-serif; font-size: .85rem; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-dialog-red:hover { background: #a93226; }
+
+    @media(max-width:900px){
+      .hero{grid-template-columns:1fr;}
+      .hero-ornament{display:none;}
+      .modules-grid{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="site-header">
+  <div class="gold-rule"></div>
+  <div class="header-inner">
+    <a class="logo" href="index.html">
+      <div class="logo-crest">🏛</div>
+      <div class="logo-wordmark">
+        <div class="logo-name">Banco<span>Sys</span></div>
+        <div class="logo-tagline">Sistema de Gestión de Turnos</div>
+      </div>
+    </a>
+    <div class="header-right">
+      <div id="main-clock">--:--:--</div>
+      <div class="live-indicator"><div class="live-dot"></div>Sistema activo</div>
+      <button class="btn-reset" onclick="openReset()">⚠ Finalizar Jornada</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <div class="stat-pip" style="background:#d4880a"></div>
+      <span class="stat-lbl">En espera</span>
+      <span class="stat-num" id="s-e" style="color:#f0a30a">0</span>
+    </div>
+    <div class="stat-item">
+      <div class="stat-pip" style="background:var(--blue2)"></div>
+      <span class="stat-lbl">En atención</span>
+      <span class="stat-num" id="s-a" style="color:var(--blue2)">0</span>
+    </div>
+    <div class="stat-item">
+      <div class="stat-pip" style="background:var(--green2)"></div>
+      <span class="stat-lbl">Atendidos hoy</span>
+      <span class="stat-num" id="s-h" style="color:var(--green2)">0</span>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">Bienvenido al sistema</div>
+    <h1>Atención<br>bancaria <em>precisa.</em></h1>
+    <p class="hero-desc">Seleccione el módulo correspondiente a su función dentro de la institución para acceder al sistema de gestión de turnos.</p>
+    <div class="hero-date" id="hero-date">—</div>
+  </div>
+  <div class="hero-ornament">
+    <div class="ornament-ring">
+      <div class="ornament-inner">🏛</div>
+    </div>
+    <div class="ornament-label">Gestión de Atención al Cliente</div>
+  </div>
+</div>
+
+<!-- MÓDULOS -->
+<div class="modules-section">
+  <div class="section-rule">
+    <span class="rule-label">Módulos de acceso</span>
+    <div class="rule-line"></div>
+  </div>
+  <div class="modules-grid">
+
+    <a href="login.html" class="module-card" style="--mc-accent:var(--blue2)">
+      <div class="mc-seq">01 — PERSONAL</div>
+      <div class="mc-icon" style="background:rgba(40,128,204,.1);border-color:rgba(40,128,204,.25)">🧑‍💼</div>
+      <div class="mc-name">Panel de Ejecutivo</div>
+      <div class="mc-desc">Accede a tu ventanilla de trabajo para llamar turnos, registrar atenciones y monitorear la cola asignada.</div>
+      <span class="mc-badge" style="color:var(--blue2)">🔐 Acceso con credenciales</span>
+    </a>
+
+    <a href="recepcion.html" class="module-card" style="--mc-accent:var(--gold2)">
+      <div class="mc-seq">02 — RECEPCIÓN</div>
+      <div class="mc-icon" style="background:rgba(200,169,74,.08);border-color:rgba(200,169,74,.2)">🎟</div>
+      <div class="mc-name">Emisión de Turno</div>
+      <div class="mc-desc">Registra el motivo de visita del cliente y genera el número de turno correspondiente al área de atención.</div>
+      <span class="mc-badge" style="color:var(--gold2)">▶ Recepcionistas</span>
+    </a>
+
+    <a href="general.html" class="module-card" style="--mc-accent:var(--green2)">
+      <div class="mc-seq">03 — SALA</div>
+      <div class="mc-icon" style="background:rgba(26,158,92,.08);border-color:rgba(26,158,92,.2)">📺</div>
+      <div class="mc-name">Pantalla de Sala</div>
+      <div class="mc-desc">Visualización pública para la sala de espera: turno actual, cola pendiente y atendidos del día.</div>
+      <span class="mc-badge" style="color:var(--green2)">🌐 Acceso público</span>
+    </a>
+
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="news-ticker">
+  <div class="ticker-flag">En tiempo real</div>
+  <div class="ticker-items">
+    <div class="tick-item"><span class="tick-sep"></span>En espera <strong id="te1">0</strong></div>
+    <div class="tick-item"><span class="tick-sep"></span>En atención <strong id="ta1">0</strong></div>
+    <div class="tick-item"><span class="tick-sep"></span>Atendidos <strong id="th1">0</strong></div>
+    <div class="tick-item"><span class="tick-sep"></span>BancoSys — Sistema operativo</div>
+    <div class="tick-item"><span class="tick-sep"></span>En espera <strong id="te2">0</strong></div>
+    <div class="tick-item"><span class="tick-sep"></span>En atención <strong id="ta2">0</strong></div>
+    <div class="tick-item"><span class="tick-sep"></span>Atendidos <strong id="th2">0</strong></div>
+    <div class="tick-item"><span class="tick-sep"></span>BancoSys — Sistema operativo</div>
+  </div>
+</div>
+
+<!-- RESET DIALOG -->
+<div class="overlay-confirm" id="confirm-overlay">
+  <div class="dialog">
+    <div class="dialog-icon">⚠️</div>
+    <div class="dialog-title">Finalizar Jornada</div>
+    <p class="dialog-desc">Esta acción <strong>eliminará todos los turnos del día actual</strong> y reiniciará los contadores a cero. La operación no puede deshacerse.</p>
+    <div class="dialog-btns">
+      <button class="btn-dialog-cancel" onclick="closeReset()">Cancelar</button>
+      <button class="btn-dialog-red" onclick="resetDay()">Confirmar y reiniciar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Clock + date
+  function tick(){
+    const n = new Date();
+    document.getElementById('main-clock').textContent =
+      n.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+    document.getElementById('hero-date').textContent =
+      n.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
+  }
+  setInterval(tick,1000); tick();
+
+  // Stats sync
+  function syncStats(){
+    const all = JSON.parse(localStorage.getItem('bancosys_turnos')||'[]');
+    const hoy = new Date().toDateString();
+    const h = all.filter(t=>new Date(t.fecha).toDateString()===hoy);
+    const e=h.filter(t=>t.estado==='espera').length;
+    const a=h.filter(t=>t.estado==='llamando').length;
+    const at=h.filter(t=>t.estado==='atendido').length;
+    document.getElementById('s-e').textContent=e;
+    document.getElementById('s-a').textContent=a;
+    document.getElementById('s-h').textContent=at;
+    ['te1','te2'].forEach(i=>document.getElementById(i).textContent=e);
+    ['ta1','ta2'].forEach(i=>document.getElementById(i).textContent=a);
+    ['th1','th2'].forEach(i=>document.getElementById(i).textContent=at);
+  }
+  syncStats(); setInterval(syncStats,3000);
+
+  function openReset(){ document.getElementById('confirm-overlay').classList.add('open'); }
+  function closeReset(){ document.getElementById('confirm-overlay').classList.remove('open'); }
+  function resetDay(){
+    localStorage.removeItem('bancosys_turnos');
+    closeReset(); syncStats();
+    // Flash feedback
+    document.body.style.opacity='.5';
+    setTimeout(()=>document.body.style.opacity='',300);
+  }
+</script>
+</body>
+</html>

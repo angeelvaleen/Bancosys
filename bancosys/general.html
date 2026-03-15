@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Sala de Espera — BancoSys</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:#0a1628;--navy2:#0e1e38;--navy3:#122245;
+      --card:#111e35;--border:#1c3058;--border2:#224070;
+      --gold:#c8a94a;--gold2:#e2c568;--gold-dim:#c8a94a14;--gold-glow:#c8a94a28;
+      --cream:#f4efe4;--blue2:#2880cc;--blue-dim:#2880cc14;
+      --green:#1a9e5c;--green2:#22c57a;--green-dim:#22c57a10;
+      --amber:#d4880a;--amber-dim:#d4880a12;
+      --text:#e8edf8;--text2:#a8b8d0;--muted:#4a6488;--muted2:#304e70;
+    }
+    html,body{height:100%;overflow:hidden;}
+    body{
+      font-family:'IBM Plex Sans',sans-serif;
+      background:var(--navy);color:var(--text);
+      display:flex;flex-direction:column;
+    }
+    /* Subtle crosshatch */
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:repeating-linear-gradient(0deg,transparent,transparent 47px,rgba(200,169,74,.025) 47px,rgba(200,169,74,.025) 48px),repeating-linear-gradient(90deg,transparent,transparent 47px,rgba(200,169,74,.025) 47px,rgba(200,169,74,.025) 48px);}
+    /* Vignette */
+    body::after{content:'';position:fixed;inset:0;z-index:1000;pointer-events:none;background:radial-gradient(ellipse at center,transparent 65%,rgba(0,0,0,.45) 100%);}
+
+    /* HEADER */
+    .gh{
+      position:relative;z-index:10;
+      background:var(--navy2);
+      border-bottom:1px solid var(--border2);
+      flex-shrink:0;
+    }
+    .gold-rule{height:3px;background:linear-gradient(90deg,transparent,var(--gold),var(--gold2),var(--gold),transparent);}
+    .gh-inner{padding:.85rem 2.5rem;display:flex;align-items:center;justify-content:space-between;}
+    .gh-brand{display:flex;align-items:center;gap:.9rem;}
+    .gh-crest{width:42px;height:42px;background:linear-gradient(135deg,var(--navy3),var(--navy2));border:1.5px solid var(--gold);border-radius:9px;display:grid;place-items:center;font-size:1.1rem;box-shadow:0 0 12px var(--gold-glow);}
+    .gh-name{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--cream);}
+    .gh-name span{color:var(--gold2);}
+    .gh-sub{font-size:.6rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);}
+    #big-clock{font-family:'IBM Plex Mono',monospace;font-size:2.8rem;font-weight:500;color:var(--gold2);letter-spacing:2px;text-shadow:0 0 24px var(--gold-glow);}
+    .gh-right{text-align:right;}
+    #gh-date{font-size:.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem;}
+    .live-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.65rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--green2);}
+    .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green2);box-shadow:0 0 6px var(--green2);animation:blink 1.8s ease-in-out infinite;}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+    .back-btn{display:flex;align-items:center;gap:.4rem;text-decoration:none;color:var(--muted);font-size:.72rem;border:1px solid var(--border2);border-radius:6px;padding:.3rem .75rem;margin-left:1rem;transition:all .2s;}
+    .back-btn:hover{color:var(--gold);border-color:var(--gold);}
+
+    /* CALLING HERO */
+    .calling-section{
+      position:relative;z-index:5;
+      background:var(--navy2);border-bottom:2px solid var(--border2);
+      padding:1.25rem 2.5rem;flex-shrink:0;
+      display:flex;align-items:center;gap:2rem;
+      min-height:90px;
+    }
+    .cs-label{
+      font-size:.62rem;font-weight:600;letter-spacing:3px;text-transform:uppercase;
+      color:var(--muted);white-space:nowrap;
+    }
+    .calling-chips{display:flex;gap:.85rem;flex-wrap:wrap;align-items:center;}
+    .call-chip{
+      background:var(--blue-dim);border:1px solid rgba(40,128,204,.4);
+      border-radius:10px;padding:.75rem 1.75rem;
+      display:flex;align-items:center;gap:1.25rem;
+      animation:callPulse 2s ease-in-out infinite;
+    }
+    @keyframes callPulse{0%,100%{box-shadow:0 0 0 0 rgba(40,128,204,.25);}50%{box-shadow:0 0 0 8px rgba(40,128,204,0);}}
+    .chip-folio{font-family:'IBM Plex Mono',monospace;font-size:1.75rem;font-weight:500;color:var(--gold2);}
+    .chip-mod{font-size:.8rem;color:var(--text2);}
+    .no-call{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--muted2);letter-spacing:1px;}
+
+    /* BOARD */
+    .board{position:relative;z-index:5;display:grid;grid-template-columns:1fr 1px 1fr 1px 110px;flex:1;overflow:hidden;}
+    .divider{background:var(--border);}
+
+    .col{display:flex;flex-direction:column;overflow:hidden;}
+    .col-head{
+      background:var(--navy2);border-bottom:1px solid var(--border2);
+      padding:.65rem 1.75rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+    }
+    .ch-title{font-size:.62rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;display:flex;align-items:center;gap:.5rem;}
+    .ch-cnt{font-family:'IBM Plex Mono',monospace;font-size:.75rem;font-weight:500;background:var(--navy3);border:1px solid var(--border2);border-radius:4px;padding:.1rem .5rem;}
+    .col-body{flex:1;overflow-y:auto;padding:.9rem 1.25rem;}
+    .col-body::-webkit-scrollbar{width:3px;}
+    .col-body::-webkit-scrollbar-thumb{background:var(--border2);}
+
+    .t-row{display:flex;align-items:center;justify-content:space-between;padding:.65rem .85rem;border-radius:8px;border:1px solid var(--border);margin-bottom:.45rem;transition:border-color .2s;}
+    .t-row:hover{border-color:var(--border2);}
+    .t-left{display:flex;align-items:center;gap:.85rem;}
+    .t-folio{font-family:'IBM Plex Mono',monospace;font-size:.95rem;font-weight:500;min-width:48px;}
+    .fw{color:var(--amber);}
+    .fa{color:var(--green2);}
+    .t-mod{font-size:.82rem;font-weight:500;}
+    .t-time{font-size:.68rem;color:var(--muted);}
+    .tag{font-family:'IBM Plex Mono',monospace;font-size:.55rem;letter-spacing:.5px;text-transform:uppercase;border-radius:4px;padding:.15rem .45rem;border:1px solid currentColor;}
+    .tag-w{color:var(--amber);background:var(--amber-dim);}
+    .tag-a{color:var(--green2);background:var(--green-dim);}
+    .empty{text-align:center;padding:2.5rem 1rem;color:var(--muted2);font-size:.78rem;}
+
+    /* STATS SIDEBAR */
+    .side-counters{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.85rem;padding:.85rem .6rem;}
+    .ctr{text-align:center;padding:.75rem .4rem;border-radius:9px;width:100%;}
+    .ctr-n{font-family:'IBM Plex Mono',monospace;font-size:2.4rem;font-weight:500;line-height:1;}
+    .ctr-l{font-size:.58rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:.25rem;}
+
+    /* FOOTER */
+    .gf{position:relative;z-index:5;background:var(--navy2);border-top:1px solid var(--border);padding:.5rem 2.5rem;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+    .gf span{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted2);letter-spacing:.5px;}
+  </style>
+</head>
+<body>
+
+<div class="gh">
+  <div class="gold-rule"></div>
+  <div class="gh-inner">
+    <div class="gh-brand">
+      <div class="gh-crest">🏛</div>
+      <div>
+        <div class="gh-name">Banco<span>Sys</span></div>
+        <div class="gh-sub">Pantalla de Sala de Espera</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <div id="big-clock">--:--:--</div>
+    </div>
+    <div class="gh-right" style="display:flex;align-items:center;gap:1rem;">
+      <div>
+        <div id="gh-date">—</div>
+        <div class="live-badge"><div class="live-dot"></div>En línea</div>
+      </div>
+      <a class="back-btn" href="index.html">← Inicio</a>
+    </div>
+  </div>
+</div>
+
+<!-- LLAMANDO -->
+<div class="calling-section">
+  <div class="cs-label">▶ LLAMANDO AHORA</div>
+  <div class="calling-chips" id="calling-chips">
+    <span class="no-call">— SIN TURNOS EN LLAMADA —</span>
+  </div>
+</div>
+
+<!-- BOARD -->
+<div class="board">
+
+  <div class="col">
+    <div class="col-head">
+      <div class="ch-title" style="color:var(--amber)">⏳ En Espera</div>
+      <div class="ch-cnt" id="cnt-e" style="color:var(--amber)">0</div>
+    </div>
+    <div class="col-body" id="list-e"><div class="empty">Sin turnos en espera</div></div>
+  </div>
+  <div class="divider"></div>
+
+  <div class="col">
+    <div class="col-head">
+      <div class="ch-title" style="color:var(--green2)">✓ Atendidos Hoy</div>
+      <div class="ch-cnt" id="cnt-a" style="color:var(--green2)">0</div>
+    </div>
+    <div class="col-body" id="list-a"><div class="empty">Sin atendidos aún</div></div>
+  </div>
+  <div class="divider"></div>
+
+  <div class="col">
+    <div class="col-head"><div class="ch-title">Stats</div></div>
+    <div class="side-counters">
+      <div class="ctr" style="background:var(--amber-dim);border:1px solid rgba(212,136,10,.2)">
+        <div class="ctr-n" style="color:var(--amber)" id="cs-e">0</div>
+        <div class="ctr-l">Espera</div>
+      </div>
+      <div class="ctr" style="background:var(--blue-dim);border:1px solid rgba(40,128,204,.2)">
+        <div class="ctr-n" style="color:var(--blue2)" id="cs-l">0</div>
+        <div class="ctr-l">Activos</div>
+      </div>
+      <div class="ctr" style="background:var(--green-dim);border:1px solid rgba(34,197,122,.2)">
+        <div class="ctr-n" style="color:var(--green2)" id="cs-a">0</div>
+        <div class="ctr-l">Atend.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="gf">
+  <span>BANCOSYS — SISTEMA DE GESTIÓN DE TURNOS — SALA DE ESPERA</span>
+  <span id="last-upd">—</span>
+</div>
+
+<script>
+  function fmt(iso){ return new Date(iso).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true}); }
+
+  function tick(){
+    const n=new Date();
+    document.getElementById('big-clock').textContent=n.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+    document.getElementById('gh-date').textContent=n.toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short',year:'numeric'}).toUpperCase();
+  }
+  setInterval(tick,1000); tick();
+
+  function render(){
+    const all=JSON.parse(localStorage.getItem('bancosys_turnos')||'[]');
+    const hoy=new Date().toDateString();
+    const h=all.filter(t=>new Date(t.fecha).toDateString()===hoy);
+    const espera=h.filter(t=>t.estado==='espera');
+    const llamando=h.filter(t=>t.estado==='llamando');
+    const atendidos=h.filter(t=>t.estado==='atendido').reverse().slice(0,15);
+
+    // Counters
+    document.getElementById('cnt-e').textContent=espera.length;
+    document.getElementById('cnt-a').textContent=atendidos.length;
+    document.getElementById('cs-e').textContent=espera.length;
+    document.getElementById('cs-l').textContent=llamando.length;
+    document.getElementById('cs-a').textContent=atendidos.length;
+
+    // Llamando
+    document.getElementById('calling-chips').innerHTML=llamando.length
+      ?llamando.map(t=>`<div class="call-chip"><div class="chip-folio">${t.folio}</div><div><div class="chip-mod">${t.modulo}</div></div></div>`).join('')
+      :'<span class="no-call">— SIN TURNOS EN LLAMADA —</span>';
+
+    // Espera
+    document.getElementById('list-e').innerHTML=espera.length
+      ?espera.map(t=>`<div class="t-row"><div class="t-left"><div class="t-folio fw">${t.folio}</div><div><div class="t-mod">${t.modulo}</div><div class="t-time">${fmt(t.fecha)}</div></div></div><span class="tag tag-w">PEND</span></div>`).join('')
+      :'<div class="empty">Sin turnos en espera</div>';
+
+    // Atendidos
+    document.getElementById('list-a').innerHTML=atendidos.length
+      ?atendidos.map(t=>`<div class="t-row"><div class="t-left"><div class="t-folio fa">${t.folio}</div><div><div class="t-mod">${t.modulo}</div><div class="t-time">${fmt(t.fecha)}</div></div></div><span class="tag tag-a">OK</span></div>`).join('')
+      :'<div class="empty">Sin atendidos aún</div>';
+
+    document.getElementById('last-upd').textContent='ULT. ACT: '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+  }
+  render(); setInterval(render,3000);
+</script>
+</body>
+</html>
